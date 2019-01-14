@@ -7,6 +7,9 @@ const ROUTES = require('./constants/Routes');
 // CONFIG
 const CONFIG = require('./config/config');
 
+// Stripe
+const Stripe = require('./Stripe/Stripe');
+
 /**
  * express module
  * @const
@@ -63,6 +66,16 @@ app.get(ROUTES.ARTICLE_DETAIL(), (req, res, next) => {
 app.post(ROUTES.SEARCH(), (req, res, next) => {
     // TODO: validate body!
     return Articles.search(req.body)
+        .then(response => ResponseManagement.handleSuccessResponse(req, res, response))
+        .catch(error => ResponseManagement.handleErrorResponse(req, res, error))
+});
+
+app.post(ROUTES.PURCHASE(), (req, res, next) => {
+    // TODO: validate body!
+    const stripe = new Stripe();
+    const articleId = req.body.articleId;
+    const tokenId = req.body.tokenId;
+    return stripe.chargeCardOneTimeToken(articleId, tokenId)
         .then(response => ResponseManagement.handleSuccessResponse(req, res, response))
         .catch(error => ResponseManagement.handleErrorResponse(req, res, error))
 });

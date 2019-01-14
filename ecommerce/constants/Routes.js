@@ -1,7 +1,8 @@
 const ROUTES = {
     ROOT: '/',
     ARTICLES_ROOT: '/articles',
-    SEARCH: '/search'
+    SEARCH: '/search',
+    PURCHASE: '/checkout/purchase'
 };
 
 module.exports = {
@@ -11,5 +12,6 @@ module.exports = {
     ARTICLE_DETAIL: () => (`${ROUTES.ARTICLES_ROOT}/:articleId`),
 
     // POST
-    SEARCH: () => (ROUTES.SEARCH)
+    SEARCH: () => (ROUTES.SEARCH),
+    PURCHASE: () => (ROUTES.PURCHASE)
 };
