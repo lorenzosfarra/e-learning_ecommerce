@@ -1,0 +1,22 @@
+{
+  "name": "ecommerce",
+  "version": "1.0.0",
+  "description": "A nodejs back-end for an extra-small e-commerce with Stripe payments",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "stripe",
+    "node",
+    "test"
+  ],
+  "author": "Lorenzo Sfarra <lorenzosfarra@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "stripe": "^6.20.0"
+  }
+}
