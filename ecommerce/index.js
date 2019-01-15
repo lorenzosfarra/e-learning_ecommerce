@@ -10,6 +10,12 @@ const CONFIG = require('./config/config');
 // Stripe
 const Stripe = require('./Stripe/Stripe');
 
+// CORS
+const cors = require('cors');
+const corsOptions = {
+    origin: CONFIG.CORS_WHITELIST
+};
+
 /**
  * express module
  * @const
@@ -32,7 +38,7 @@ const Articles = new ArticlesClass();
  * GET REQUEST
  * Retrieve the data that we want to show in our entry point...
  */
-app.get(ROUTES.ROOT(), (req, res, next) => {
+app.get(ROUTES.ROOT(), cors(corsOptions), (req, res, next) => {
     res.json("Nothing to see, here.");
 });
 
@@ -40,7 +46,7 @@ app.get(ROUTES.ROOT(), (req, res, next) => {
  * GET REQUEST
  * Retrieve the list of articles
  */
-app.get(ROUTES.ARTICLES_LIST(), (req, res, next) => {
+app.get(ROUTES.ARTICLES_LIST(), cors(corsOptions), (req, res, next) => {
     return Articles.all()
         .then(response => ResponseManagement.handleSuccessResponse(req, res, response))
         .catch(error => ResponseManagement.handleErrorResponse(req, res, error))
@@ -51,7 +57,7 @@ app.get(ROUTES.ARTICLES_LIST(), (req, res, next) => {
  * Article details.
  * An articleId param should be part of the req.params object.
  */
-app.get(ROUTES.ARTICLE_DETAIL(), (req, res, next) => {
+app.get(ROUTES.ARTICLE_DETAIL(), cors(corsOptions), (req, res, next) => {
     // TODO: Be sure that articleId is present
     const articleId = req.params.articleId;
     return Articles.get(articleId)
@@ -63,14 +69,17 @@ app.get(ROUTES.ARTICLE_DETAIL(), (req, res, next) => {
  * POST REQUEST
  * Search for an article
  */
-app.post(ROUTES.SEARCH(), (req, res, next) => {
+app.options(ROUTES.SEARCH(), cors(corsOptions));
+app.post(ROUTES.SEARCH(), cors(corsOptions), (req, res, next) => {
     // TODO: validate body!
+    console.log(req.body);
     return Articles.search(req.body)
         .then(response => ResponseManagement.handleSuccessResponse(req, res, response))
         .catch(error => ResponseManagement.handleErrorResponse(req, res, error))
 });
 
-app.post(ROUTES.PURCHASE(), (req, res, next) => {
+app.options(ROUTES.PURCHASE(), cors(corsOptions));
+app.post(ROUTES.PURCHASE(), cors(corsOptions), (req, res, next) => {
     // TODO: validate body!
     const stripe = new Stripe();
     const articleId = req.body.articleId;
