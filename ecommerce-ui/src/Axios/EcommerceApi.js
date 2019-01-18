@@ -36,4 +36,32 @@ export class EcommerceApi {
                 return Promise.reject(error);
             })
     }
+
+    stripePayWithToken(articleId, tokenId) {
+        const data = {
+            articleId: articleId,
+            tokenId: tokenId
+        };
+
+        return axios({
+            method: 'post',
+            url: URLs.CHECKOUT_PURCHASE(),
+            data: data
+        })
+
+            .then(res => {
+                return Promise.resolve(res.data);
+            })
+
+            .catch(error => {
+                console.error("[STRIPE ERROR]", error);
+
+                if (error.response) {
+                    if (error.response.data) {
+                        return Promise.reject(error.response.data);
+                    }
+                }
+                return Promise.reject(error);
+            })
+    }
 }

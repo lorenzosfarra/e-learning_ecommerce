@@ -1,15 +1,16 @@
 import React, {Component} from 'react';
 import {
     Container, Row, Col,
-    CardBody, CardTitle, CardText, Button, Form, FormGroup, Label, Input
+    Button, Form, FormGroup, Label, Input
 } from "reactstrap";
 import {EcommerceApi} from "./Axios/EcommerceApi";
 import {
-    CardImgWithBottomBorder,
-    CardSubtitleTag,
-    CardWithTopMargin,
     EcommerceTitle, RowTopBottomBorder
 } from "./components/Layout";
+import {CardForm} from "./components/screens/CardForm";
+import {StripePublishableKey} from "./config/Stripe";
+import {Elements, StripeProvider} from "react-stripe-elements";
+import {ArticleCard} from "./components/ArticleCard";
 
 class App extends Component {
 
@@ -22,8 +23,14 @@ class App extends Component {
             loading: true,
             articles: [],
             filterType: null,
-            filterTitle: null,
-            filterTitleActive: false
+            filterTitle: '',
+            filterTitleActive: false,
+
+            showPayment: false,
+            selectedArticle: null,
+
+            stripe: null
+
         };
 
         this.testPost = this.testPost.bind(this);
@@ -31,6 +38,8 @@ class App extends Component {
         this.removeTitleFilter = this.removeTitleFilter.bind(this);
         this.addTitleFilter = this.addTitleFilter.bind(this);
         this.onTitleChanged = this.onTitleChanged.bind(this);
+        this.addTypeFilter = this.addTypeFilter.bind(this);
+        this.purchaseArticle = this.purchaseArticle.bind(this);
     }
 
     _loadedArticles(articles) {
@@ -54,6 +63,17 @@ class App extends Component {
     }
 
     componentDidMount() {
+        if (window.Stripe) {
+            this.setState({
+                stripe: window.Stripe(StripePublishableKey)
+            })
+        } else {
+            document.querySelector("#stripe-js")
+                .addEventListener('load', () => {
+                    // Create Stripe instance once Stripe.js loads
+                    this.setState({stripe: window.Stripe(StripePublishableKey)})
+                })
+        }
         this._loadAllArticles();
     }
 
@@ -123,6 +143,13 @@ class App extends Component {
             })
     }
 
+    purchaseArticle(article) {
+        this.setState({
+            showPayment: true,
+            selectedArticle: article
+        })
+    }
+
     /** // End filter title **/
 
     testPost() {
@@ -138,28 +165,65 @@ class App extends Component {
             })
     }
 
+    _renderShowPayment() {
+        const {selectedArticle, stripe} = this.state;
+        return <Container>
+            {this._renderTitle()}
+            <Row>
+                <Col xs={{size: 10, offset: 1}}
+                     md={{size: 3, offset: 0}}>
+                    <ArticleCard
+                        addTypeFilter={this.addTypeFilter}
+                        article={selectedArticle}/>
+                </Col>
+                <Col xs={{size: 10, offset: 1}}
+                     md={{size: 8, offset: 1}}
+                >
+                    <StripeProvider stripe={stripe}>
+                        <Elements>
+                            <CardForm
+                                articleId={selectedArticle.id}/>
+                        </Elements>
+                    </StripeProvider>
+                </Col>
+            </Row>
+        </Container>
+    }
+
+    _renderLoading() {
+        return (<Container>
+            {this._renderTitle()}
+            <Row>
+                <Col>
+                    <p>Loading articles...</p>
+                </Col>
+            </Row>
+        </Container>);
+    }
+
+    _renderTitle() {
+        return (<Row>
+            <Col>
+                <EcommerceTitle>E-commerce title</EcommerceTitle>
+            </Col>
+        </Row>);
+    }
+
     render() {
-        const {loading, filterType, filterTitle, filterTitleActive, articles} = this.state;
+
+        const {loading, filterType, filterTitle, filterTitleActive, articles, showPayment} = this.state;
+
+        if (showPayment) {
+            return this._renderShowPayment();
+        }
 
         if (loading) {
-            return (
-                <Container>
-                    <Row>
-                        <Col>
-                            <p>Loading articles...</p>
-                        </Col>
-                    </Row>
-                </Container>
-            )
+            return this._renderLoading();
         }
 
         return (
             <Container>
-                <Row>
-                    <Col>
-                        <EcommerceTitle>E-commerce title</EcommerceTitle>
-                    </Col>
-                </Row>
+                {this._renderTitle()}
                 <Row>
                     <Col>
                         <Form>
@@ -199,25 +263,9 @@ class App extends Component {
                     {(articles.length === 0) ? <p>No articles.</p> :
                         (articles.map((article) => (
                             <Col sm="6" md="4" key={article.id}>
-                                <CardWithTopMargin>
-                                    <CardImgWithBottomBorder top width="100%"
-                                                             src={article.img}
-                                                             alt={article.title}/>
-                                    <CardBody>
-                                        <CardTitle>
-                                            {article.title}
-                                        </CardTitle>
-                                        <CardSubtitleTag
-                                            onClick={() => {
-                                                this.addTypeFilter(article.type)
-                                            }}
-                                        >{article.type}</CardSubtitleTag>
-                                        <CardText>
-                                            {article.price}&euro; - {article.inStock ? "Available" : "Not Available"}
-                                        </CardText>
-                                        <Button>Buy Now</Button>
-                                    </CardBody>
-                                </CardWithTopMargin>
+                                <ArticleCard article={article}
+                                             hidePayButton={false}
+                                             purchaseArticle={this.purchaseArticle}/>
                             </Col>
                         )))
                     }

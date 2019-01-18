@@ -27,7 +27,7 @@ class Stripe {
      * @private
      */
     _getArticlePrice(article) {
-        return article.price * 100;
+        return Number.parseInt(article.price * 100);
     }
 
     chargeCardOneTimeToken(articleId, tokenId, currency = this.DEFAULT_CURRENCY) {
