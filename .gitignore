@@ -1,3 +1,4 @@
 node_modules
 ecommerce/node_modules
 ecommerce/.env
+node_stripe
