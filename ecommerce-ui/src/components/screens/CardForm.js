@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import {PayButton, PayForm, PayLabel, ThinProgress} from "../Layout";
 import {CardElement, injectStripe} from "react-stripe-elements";
 import {EcommerceApi} from "../../Axios/EcommerceApi";
+import {Alert} from "reactstrap";
+import {ThankYou} from "../ThankYou";
 
 class _CardForm extends Component {
     constructor(props) {
@@ -14,8 +16,8 @@ class _CardForm extends Component {
             submitting: false,
 
             purchaseSuccessful: false,
-            purchaseError: false,
             purchaseTransactionId: null,
+            purchaseError: false,
             purchaseErrorMessage: null
         };
 
@@ -44,6 +46,7 @@ class _CardForm extends Component {
         this.handleFocus = this.handleFocus.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleReady = this.handleReady.bind(this);
+        this.errorMessageToggle = this.errorMessageToggle.bind(this);
     }
 
     startProgressBarAnimation() {
@@ -97,14 +100,14 @@ class _CardForm extends Component {
         const {articleId} = this.props;
         return this.ecommerceApi.stripePayWithToken(articleId, tokenId)
             .then(data => {
+                console.log("data", data);
                 this.stopProgressBarAnimation();
 
-                const {payload = {}} = data;
-                const {transactionId} = payload;
+                const {payload} = data;
                 this.setState({
                     submitting: false,
                     purchaseSuccessful: true,
-                    purchaseTransactionId: transactionId,
+                    purchaseTransactionId: payload,
                     purchaseError: false
                 })
             })
@@ -121,7 +124,13 @@ class _CardForm extends Component {
                     purchaseErrorMessage: `${message} (${statusCode}/${code})`
                 })
             })
+    }
 
+    errorMessageToggle() {
+        const {purchaseError} = this.state;
+        this.setState({
+            purchaseError: !purchaseError
+        });
     }
 
     handleSubmit(ev) {
@@ -139,7 +148,7 @@ class _CardForm extends Component {
                         this.payWithToken(token);
                     } else {
                         // TODO: handle the error!
-                        console.error("[ERROR handling submit]", error);
+                        console.error("[!ERROR handling submit]", error);
                     }
                 })
         } else {
@@ -148,9 +157,22 @@ class _CardForm extends Component {
     }
 
     render() {
-        const {submitting, progressbarValue} = this.state;
+        const {submitting, progressbarValue,
+            purchaseError, purchaseErrorMessage,
+            purchaseSuccessful,
+            purchaseTransactionId
+        } = this.state;
+
+        if (purchaseSuccessful) {
+            return (<ThankYou orderNumber={purchaseTransactionId}/>)
+        }
         return (
             <PayForm onSubmit={this.handleSubmit}>
+                <Alert color="warning" isOpen={purchaseError}
+                       toggle={this.errorMessageToggle}>
+                    {purchaseErrorMessage}
+                </Alert>
+
                 <PayLabel>Payment for our article</PayLabel>
                 {this.props.stripe ? (
                     <CardElement

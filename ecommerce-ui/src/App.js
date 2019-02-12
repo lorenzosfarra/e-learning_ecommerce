@@ -173,7 +173,6 @@ class App extends Component {
                 <Col xs={{size: 10, offset: 1}}
                      md={{size: 3, offset: 0}}>
                     <ArticleCard
-                        addTypeFilter={this.addTypeFilter}
                         article={selectedArticle}/>
                 </Col>
                 <Col xs={{size: 10, offset: 1}}
@@ -264,6 +263,7 @@ class App extends Component {
                         (articles.map((article) => (
                             <Col sm="6" md="4" key={article.id}>
                                 <ArticleCard article={article}
+                                             addTypeFilter={this.addTypeFilter}
                                              hidePayButton={false}
                                              purchaseArticle={this.purchaseArticle}/>
                             </Col>
