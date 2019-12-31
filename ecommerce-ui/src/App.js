@@ -11,6 +11,7 @@ import {CardForm} from "./components/screens/CardForm";
 import {StripePublishableKey} from "./config/Stripe";
 import {Elements, StripeProvider} from "react-stripe-elements";
 import {ArticleCard} from "./components/ArticleCard";
+import {Filters} from "./config/Filters";
 
 class App extends Component {
 
@@ -252,6 +253,7 @@ class App extends Component {
                         </Form>
                     </Col>
                 </Row>
+                {this.showAdditionalFilters()}
                 {(filterType !== null) && <RowTopBottomBorder>
                     Showing only type "{filterType}" <Button onClick={this.removeTypeFilter}>X</Button>
                 </RowTopBottomBorder>}
@@ -272,6 +274,72 @@ class App extends Component {
                 </Row>
             </Container>
         );
+    }
+
+    /**
+     * Check if we have to show additional filters based on the current selected filter
+     */
+    haveToShowAdditionalFilters() {
+        const {filterType} = this.state;
+        if (filterType === null) {
+            return false;
+        }
+        const additionalFilters = this.getAdditionalFilters();
+        return (additionalFilters !== null);
+    }
+
+    /**
+     * Returns the list of additional filters or null, if there aren't additional filters.
+     * @returns {*}
+     */
+    getAdditionalFilters() {
+        const {filterType} = this.state;
+        return Filters.ADDITIONAL_FILTERS[filterType] ? Filters.ADDITIONAL_FILTERS[filterType] : null;
+    }
+
+    /**
+     * Show additional filters, if any
+     * @returns {null}
+     */
+    showAdditionalFilters() {
+        const {filterType} = this.state;
+        if (!this.haveToShowAdditionalFilters()) {
+            return null;
+        }
+        return <Row>
+            <Col>
+                <Form>
+                    <FormGroup row>
+                        {this.getAdditionalFilters().map((filter, index) => (
+                            <Col key={"col-" + filter.id + "-" + index}>
+                                <FormGroup>
+                                    <Label for={filter.id + "-" + index}>{filter.name}</Label>
+                                    <Input
+                                        type="select"
+                                        key={filter.id + "-" + index}
+                                        name={filter.id + "-" + index}
+                                        id={filter.id + "-" + index}
+                                        onChange={(event) => {
+                                            console.log(`[sample] Filter ${filterType}. Changed option for ${filter.name}: ${event.target.value}`);
+                                        }}
+                                    >
+                                        <option>---</option>
+                                        {filter.options.map((option, index) => {
+                                                return <option
+                                                    key={"option-" + filter.id + "-" + index}
+                                                    value={option}>
+                                                    {option}
+                                                </option>
+                                            }
+                                        )}
+                                    </Input>
+                                </FormGroup>
+                            </Col>
+                        ))}
+                    </FormGroup>
+                </Form>
+            </Col>
+        </Row>
     }
 }
 
