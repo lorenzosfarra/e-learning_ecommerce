@@ -1,4 +1,5 @@
 node_modules
 ecommerce/node_modules
 ecommerce/.env
+ecommerce-ui/.idea
 node_stripe
